@@ -1,0 +1,31 @@
+---
+
+postgres_exporter_version: "0.10.1"
+postgres_exporter_user: root
+postgres_exporter_create_user: false
+
+postgres_exporter_db_host: ~
+postgres_exporter_db_user: postgres
+postgres_exporter_db_pass: ~
+postgres_exporter_db_port: ~
+postgres_exporter_db_sslmode: false
+
+postgres_exporter_container_name: postgres_exporter
+postgres_exporter_container_image_name: quay.io/prometheuscommunity/postgres-exporter
+postgres_exporter_container_image_tag: ~
+postgres_exporter_container_image_ref: "{{ postgres_exporter_container_image_name }}:{{ postgres_exporter_container_image_tag | default('v' + postgres_exporter_version, True) }}"
+postgres_exporter_container_networks: ~
+postgres_exporter_container_purge_networks: false
+postgres_exporter_container_volumes: []
+postgres_exporter_container_ports: ~
+postgres_exporter_container_env:
+  DATA_SOURCE_NAME: >-
+    user={{ postgres_exporter_db_user }}
+    host={{ postgres_exporter_db_host }}
+    sslmode={{ 'enable' if postgres_exporter_db_sslmode else 'disable' }}
+    {%- if postgres_exporter_db_pass -%} pass={{ postgres_exporter_db_pass }}{% endif -%}
+    {%- if postgres_exporter_db_port -%} port={{ postgres_exporter_db_port }}{% endif -%}
+postgres_exporter_container_labels:
+  VERSION: "{{ postgres_exporter_version }}"
+postgres_exporter_container_user: "{{ postgres_exporter_user if not postgres_exporter_create_user else postgres_exporter_user_info.uid }}"
+postgres_exporter_container_restart_policy: unless-stopped

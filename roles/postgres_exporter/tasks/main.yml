@@ -1,0 +1,30 @@
+---
+
+- name: Ensure user '{{ postgres_exporter_user }}' exists
+  user:
+    name: "{{ postgres_exporter_user }}"
+    state: present
+    system: yes
+  register: postgres_exporter_user_info
+  when: postgres_exporter_create_user
+
+- name: Ensure container image '{{ postgres_exporter_container_image_ref }}' is available
+  community.docker.docker_image:
+    name: "{{ postgres_exporter_container_image_ref }}"
+    state: present
+    source: pull
+    force_source: "{{ 'yes' if postgres_exporter_container_image_tag else 'no' }}"
+
+- name: Ensure postgres exporter container '{{ postgres_exporter_container_name }}' is running
+  docker_container:
+    name: "{{ postgres_exporter_container_name }}"
+    image: "{{ postgres_exporter_container_image_ref }}"
+    networks: "{{ postgres_exporter_container_networks | default(omit) }}"
+    purge_networks: "{{ postgres_exporter_container_purge_networks }}"
+    volumes: "{{ postgres_exporter_container_volumes | default(omit) }}"
+    labels: "{{ postgres_exporter_container_labels | default(omit) }}"
+    ports: "{{ postgres_exporter_container_ports | default(omit) }}"
+    user: "{{ postgres_exporter_container_user }}"
+    env: "{{ postgres_exporter_container_env }}"
+    restart_policy: "{{ postgres_exporter_container_restart_policy }}"
+    state: started
