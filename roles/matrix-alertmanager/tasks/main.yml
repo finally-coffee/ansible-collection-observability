@@ -1,0 +1,46 @@
+---
+
+- name: Ensure user '{{ matrix_alertmanager_user }}' is created
+  user:
+    name: "{{ matrix_alertmanager_user }}"
+    state: present
+    system: yes
+  when: "matrix_alertmanager_user is string and matrix_alertmanager_user != 'root'"
+  register: matrix_alertmanager_user_info
+
+- name: Ensure base directory '{{ matrix_alertmanager_base_path }}' exists
+  file:
+    path: "{{ matrix_alertmanager_base_path }}"
+    state: directory
+    owner: "{{ matrix_alertmanager_run_user }}"
+    group: "{{ matrix_alertmanager_run_group }}"
+    mode: "0750"
+
+- name: Ensure config file '{{ matrix_alertmanager_config_file_path }}' is templated
+  template:
+    src: env.j2
+    dest: "{{ matrix_alertmanager_config_file_path }}"
+    owner: "{{ matrix_alertmanager_run_user }}"
+    group: "{{ matrix_alertmanager_run_group }}"
+    mode: "0640"
+  vars:
+    matrix_alertmanager_rooms_flattened: >-2
+      {%- for receiver in matrix_alertmanager_rooms -%}
+      {{ receiver.name }}/{{ receiver.room_id }}{{ '' if loop.last else '|' }}
+      {%- endfor %}
+
+- name: Ensure docker container '{{ matrix_alertmanager_container_name }}' is running
+  docker_container:
+    name: "{{ matrix_alertmanager_container_name }}"
+    image: "{{ matrix_alertmanager_container_image }}"
+    env: "{{ matrix_alertmanager_container_env }}"
+    user: "{{ matrix_alertmanager_run_user }}:{{ matrix_alertmanager_run_group }}"
+    ports: "{{ matrix_alertmanager_container_ports }}"
+    labels: "{{ matrix_alertmanager_container_labels }}"
+    volumes: "{{ matrix_alertmanager_container_volumes }}"
+    networks: "{{ matrix_alertmanager_container_networks | default(omit, True) }}"
+    capabilities: "{{ matrix_alertmanager_container_capabilities | default(omit, True) }}"
+    purge_networks: "{{ matrix_alertmanager_container_purge_networks | default(omit, True) }}"
+    etc_hosts: "{{ matrix_alertmanager_container_etc_hosts | default(omit, True) }}"
+    restart_policy: "{{ matrix_alertmanager_container_restart_policy }}"
+    state: started

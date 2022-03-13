@@ -1,0 +1,16 @@
+---
+
+matrix_alertmanager_run_user: >-2
+  {{ matrix_alertmanager_user_info.uid
+      if matrix_alertmanager_user != 'root'
+      else matrix_alertmanager_user }}
+matrix_alertmanager_run_group: >-2
+  {{ matrix_alertmanager_user_info.group
+      if matrix_alertmanager_user != 'root'
+      else matrix_alertmanager_user }}
+
+matrix_alertmanager_container_base_env: {}
+matrix_alertmanager_container_base_ports: []
+matrix_alertmanager_container_base_volumes:
+  - "{{ matrix_alertmanager_config_file_path }}:/app/.env:ro"
+matrix_alertmanager_container_base_labels: {}
