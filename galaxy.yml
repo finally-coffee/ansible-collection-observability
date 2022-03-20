@@ -1,0 +1,15 @@
+namespace: finallycoffee
+name: observability
+version: 0.0.1
+readme: README.md
+authors:
+- Johanna Dorothea Reichmann <transcaffeine@finallycoffee.eu>
+description: Various ansible roles useful for automating infrastructure
+dependencies:
+  "community.docker": "^1.10.0"
+license:
+- CNPLv7+
+build_ignore:
+- '*.tar.gz'
+repository: https://git.finally.coffee/finallycoffee/observability
+issues: https://git.finally.coffee/finallycoffee/observability/issues
