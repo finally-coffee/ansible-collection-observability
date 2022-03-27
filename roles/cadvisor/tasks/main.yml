@@ -1,0 +1,26 @@
+---
+
+- name: Ensure container image is present
+  docker_image:
+    name: "{{ cadvisor_container_image_ref }}"
+    state: present
+    source: pull
+    force_source: "{{ cadvisor_container_image_tag|default(False, True) | bool }}"
+
+- name: Ensure cadvisor container is running
+  docker_container:
+    name: "{{ cadvisor_container_name }}"
+    image: "{{ cadvisor_container_image_ref }}"
+    env: "{{ cadvisor_container_env | default(omit, True) }}"
+    ports: "{{ cadvisor_container_ports | default(omit, True) }}"
+    labels: "{{ cadvisor_container_labels }}"
+    devices: "{{ cadvisor_container_devices }}"
+    volumes: "{{ cadvisor_container_volumes }}"
+    networks: "{{ cadvisor_container_networks | default(omit, True) }}"
+    etc_hosts: "{{ cadvisor_container_etc_hosts | default(omit, True) }}"
+    privileged: "{{ cadvisor_container_privileged }}"
+    command: "{{ cadvisor_container_command }}"
+    pid_mode: "{{ cadvisor_container_pid_mode | default(omit, True) }}"
+    userns_mode: "{{ cadvisor_container_userns_mode | default(omit, True) }}"
+    restart_policy: "{{ cadvisor_container_restart_policy }}"
+    state: started
