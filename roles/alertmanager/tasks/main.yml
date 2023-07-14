@@ -1,0 +1,51 @@
+---
+
+- name: Ensure alertmanager user '{{ alertmanager_user }}' exists
+  ansible.builtin.user:
+    name: "{{ alertmanager_user }}"
+    state: present
+    system: true
+  register: alertmanager_user_info
+
+- name: Ensure mounts are created
+  ansible.builtin.file:
+    dest: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default(alertmanager_user_info.uid | default(alertmanager_user)) }}"
+    group: "{{ item.owner | default(alertmanager_user_info.group | default(alertmanager_user)) }}"
+    mode: "{{ item.mode | default('0755') }}"
+  loop:
+    - path: "{{ alertmanager_base_path }}"
+    - path: "{{ alertmanager_data_path }}"
+    - path: "{{ alertmanager_config_path }}"
+
+- name: Ensure config file is templated
+  ansible.builtin.copy:
+    dest: "{{ alertmanager_config_file }}"
+    content: "{{ alertmanager_config | to_nice_yaml }}"
+    owner: "{{ alertmanager_user_info.uid | default(alertmanager_user) }}"
+    owner: "{{ alertmanager_user_info.uid | default(alertmanager_user) }}"
+    mode: "0640"
+  notify:
+    - restart-alertmanager
+
+- name: Ensure container image is present on host
+  community.docker.docker_image:
+    name: "{{ alertmanager_container_image_reference }}"
+    state: present
+    source: pull
+    force_source: "{{ alertmanager_container_image_force_pull | bool }}"
+
+- name: Ensure container '{{ alertmanager_container_name }}' is running
+  community.docker.docker_container:
+    name: "{{ alertmanager_container_name }}"
+    image: "{{ alertmanager_container_image_reference }}"
+    env: "{{ alertmanager_container_env | default(omit) }}"
+    user: "{{ alertmanager_user_info.uid | default(alertmanager_user) }}"
+    ports: "{{ alertmanager_container_ports | default(omit) }}"
+    volumes: "{{ alertmanager_container_volumes | default(omit) }}"
+    networks: "{{ alertmanager_container_networks | default(omit) }}"
+    purge_networks: "{{ alertmanager_container_purge_networks | default(omit) }}"
+    etc_hosts: "{{ alertmanager_container_etc_hosts | default(omit) }}"
+    restart_policy: "{{ alertmanager_container_restart_policy }}"
+    state: started

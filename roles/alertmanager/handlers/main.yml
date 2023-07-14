@@ -1,0 +1,8 @@
+---
+
+- name: Ensure alertmanager is restarted
+  community.docker.docker_container:
+    name: "{{ alertmanager_container_name }}"
+    state: started
+    restart: true
+  listen: restart-alertmanager

@@ -7,6 +7,10 @@ metrics or alerting.
 
 ## Roles
 
+- [`alertmanager`](roles/alertmanager/README.md): Runs prometheus'
+  alertmanager for receiving alerts from prometheus and routing them
+  to the correct configured receivers.
+
 - [`matrix-alertmanager`](roles/matrix-alertmanager/README.md): An alert-
   manager receiver which posts alerts to a configured matrix channel
   using alertmanagers' webhooks.
