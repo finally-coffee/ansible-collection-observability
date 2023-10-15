@@ -1,0 +1,10 @@
+---
+- name: Ensure loki is reloaded
+  listen: loki_reload
+  community.docker.docker_container:
+    name: "{{ loki_container_name }}"
+    state: "started"
+    restart: true
+    force_kill: true
+    kill_signal: "HUP"
+  when: "loki_container_state in ['started', 'present']"

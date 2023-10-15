@@ -1,0 +1,45 @@
+---
+loki_user: loki
+loki_version: "2.9.1"
+loki_base_path: "/opt/loki"
+loki_config_path: "{{ loki_base_path }}/config"
+loki_config_file: "{{ loki_config_path }}/config.yml"
+loki_state: present
+loki_container_state: >-
+  {{ (loki_state == 'present') | ternary('started', 'absent') }}
+loki_run_user: "{{ loki_user_info.uid | default(loki_user) }}"
+loki_run_group: "{{ loki_user_info.group | default(loki_user) }}"
+loki_all_host_directories: >-
+  {{ loki_required_host_directories + loki_host_directories | default([]) }}
+loki_required_host_directories:
+  - path: "{{ loki_base_path }}"
+  - path: "{{ loki_config_path }}"
+
+loki_container_name: loki
+loki_container_image_name: "loki"
+loki_container_image_namespace: "grafana"
+loki_container_image_registry: "docker.io"
+loki_container_image_tag: ~
+loki_container_image: >-
+  {{ loki_container_image_registry
+    + (('/' + loki_container_image_namespace)
+    if loki_container_image_namespace | default(false, true) else '')
+    + '/' + loki_container_image_name
+    + ':' + (loki_container_image_tag | default(loki_version, true))
+  }}
+loki_container_env: {}
+loki_container_base_volumes:
+  - "{{ loki_config_file }}:/etc/loki/local-config.yaml:ro"
+loki_container_all_volumes: >-2
+  {{ loki_container_base_volumes + loki_container_volumes | default([]) }}
+loki_container_all_labels: >-2
+  {{ loki_container_base_labels | combine(loki_container_labels | default({})) }}
+loki_container_restart_policy: "unless-stopped"
+
+loki_config_target: "all"
+loki_config_auth_enabled: false
+loki_config_server_http_listen_port: 3100
+loki_config_server_http_listen_address: 127.0.0.1
+loki_config_storage_config: {}
+loki_config_schema_config_configs: []
+loki_config_limits_config: []

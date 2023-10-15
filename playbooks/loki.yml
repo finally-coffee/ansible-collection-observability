@@ -1,0 +1,6 @@
+---
+- name: Install loki
+  hosts: "{{ loki_hosts | default('loki') }}"
+  become: true
+  roles:
+    - role: finallycoffee.observability.loki

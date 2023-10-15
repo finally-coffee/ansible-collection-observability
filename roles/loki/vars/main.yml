@@ -1,0 +1,14 @@
+loki_default_config:
+  target: "{{ loki_config_target }}"
+  auth_enabled: "{{ loki_config_auth_enabled }}"
+  server:
+    http_listen_address: "{{ loki_config_server_http_listen_address }}"
+    http_listen_port: "{{ loki_config_server_http_listen_port }}"
+  storage_config: "{{ loki_config_storage_config }}"
+  limits_config: "{{ loki_config_limits_config }}"
+  schema_config:
+    configs: "{{ loki_config_schema_config_configs }}"
+loki_final_config: >-
+  {{ loki_default_config | combine(loki_config | default({}), recursive=True) }}
+loki_container_base_labels:
+  version: "{{ loki_version }}"

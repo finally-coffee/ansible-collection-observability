@@ -1,0 +1,56 @@
+---
+- name: Ensure loki user '{{ loki_user }}' is {{ loki_state }}
+  ansible.builtin.user:
+    name: "{{ loki_user }}"
+    state: "{{ loki_state }}"
+    system: true
+    create_home: false
+  register: loki_user_info
+
+- name: Ensure loki host directories are {{ loki_state }}
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: >-
+      {{ (loki_state == 'present') | ternary('directory', 'absent') }}
+    owner: "{{ item.owner | default(loki_run_user) }}"
+    group: "{{ item.group | default(loki_run_group) }}"
+    mode: "{{ item.mode | default('0755') }}"
+  loop: "{{ loki_all_host_directories }}"
+
+- name: Ensure loki configuration file is templated
+  ansible.builtin.copy:
+    content: "{{ loki_final_config | to_nice_yaml(width=10000, indent=2) }}"
+    dest: "{{ loki_config_file }}"
+    owner: "{{ loki_run_user }}"
+    group: "{{ loki_run_group }}"
+    mode: "0640"
+  notify: loki_reload
+
+- name: Ensure loki container image '{{ loki_container_image }}' is {{ loki_state }}
+  community.docker.docker_image:
+    name: "{{ loki_container_image }}"
+    state: "{{ loki_state }}"
+    source: "pull"
+    force_source: >-
+      {{ loki_container_image_force_source
+        | default(loki_container_image_tag | default(false, true)) }}
+  register: loki_container_image_info
+  until: loki_container_image_info is success
+  retries: 3
+  delay: 5
+
+- name: Ensure loki container '{{ loki_container_name }}' is {{ loki_container_state }}
+  community.docker.docker_container:
+    name: "{{ loki_container_name }}"
+    image: "{{ loki_container_image }}"
+    env: "{{ loki_container_env }}"
+    user: "{{ loki_run_user }}:{{ loki_run_group }}"
+    ports: "{{ loki_container_ports | default(omit, true) }}"
+    labels: "{{ loki_container_all_labels }}"
+    volumes: "{{ loki_container_all_volumes }}"
+    networks: "{{ loki_container_networks | default(omit, true) }}"
+    purge_networks: "{{ loki_container_purge_networks | default(omit, true) }}"
+    etc_hosts: "{{ loki_container_etc_hosts | default(omit, true) }}"
+    hostname: "{{ loki_container_hostname | default(omit, true) }}"
+    restart_policy: "{{ loki_container_restart_policy }}"
+    state: "{{ loki_container_state }}"
