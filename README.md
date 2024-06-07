@@ -15,6 +15,8 @@ metrics or alerting.
   manager receiver which posts alerts to a configured matrix channel
   using alertmanagers' webhooks.
 
+- [`vmtsdb`](roles/vmtsdb/README.md): VictoriaMetrics time series database.
+
 - [`postgres_exporter`](roles/postgres_exporter/README.md): Prometheus
   exporter for postgres databases, in a docker container.
 

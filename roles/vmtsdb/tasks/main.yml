@@ -1,0 +1,47 @@
+---
+- name: Ensure user {{ vmtsdb_user }} is {{ vmtsdb_state }}
+  ansible.builtin.user:
+    name: "{{ vmtsdb_user }}"
+    state: present
+    system: true
+    create_home: false
+  register: vmtsdb_user_info
+
+- name: Ensure directories for vmtsdb are {{ vmtsdb_state }}
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "{{ (vmtsdb_state == 'present') | ternary('directory', 'absent') }}"
+    owner: "{{ item.owner | default(vmtsdb_user_id) }}"
+    group: "{{ item.group | default(vmtsdb_group_id) }}"
+    mode: "{{ item.mode | default('0775') }}"
+  loop:
+    - path: "{{ vmtsdb_base_path }}"
+    - path: "{{ vmtsdb_data_path }}"
+      mode: "0755"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Ensure container image {{ vmtsdb_container_image }} is {{ vmtsdb_state }}
+  community.docker.docker_image:
+    name: "{{ vmtsdb_container_image }}"
+    state: "{{ vmtsdb_state }}"
+    source: "{{ (vmtsdb_state == 'present') | ternary('pull', omit) }}"
+    force_source: >-2
+      {{ (vmtsdb_container_image == 'present') | ternary(vmtsdb_container_image_tag, omit) }}
+
+- name: Ensure vmtsdb container is {{ vmtsdb_state }}
+  community.docker.docker_container:
+    name: "{{ vmtsdb_container_name}}"
+    image: "{{ vmtsdb_container_image }}"
+    env: "{{ vmtsdb_container_merged_env }}"
+    user: "{{ vmtsdb_container_user }}"
+    ports: "{{ vmtsdb_container_ports | default(omit) }}"
+    groups: "{{ vmtsdb_container_group }}"
+    labels: "{{ vmtsdb_container_labels | default(omit) }}"
+    volumes: "{{ vmtsdb_container_merged_volumes }}"
+    command: "{{ vmtsdb_container_merged_command }}"
+    networks: "{{ vmtsdb_container_networks | default(omit) }}"
+    etc_hosts: "{{ vmtsdb_container_etc_hosts | default(omit )}}"
+    purge_networks: "{{ vmtsdb_container_purge_networks | default(omit) }}"
+    restart_policy: "{{ vmtsdb_container_restart_policy | default(omit) }}"
+    state: "{{ (vmtsdb_state == 'present') | ternary('started', 'absent') }}"

@@ -1,0 +1,45 @@
+---
+vmtsdb_state: present
+vmtsdb_user: vmtsdb
+vmtsdb_version: "1.87.5"
+vmtsdb_base_path: "/opt/vmtsdb"
+vmtsdb_data_path: "{{ vmtsdb_base_path }}/data"
+
+vmtsdb_container_image_server: docker.io
+vmtsdb_container_image_namespace: "victoriametrics"
+vmtsdb_container_image_container: "victoria-metrics"
+vmtsdb_container_image_name: >-2
+  {{
+    vmtsdb_container_image_server
+    + ((vmtsdb_container_image_namespace is defined)
+      | ternary('/' ~ vmtsdb_container_image_namespace, ''))
+    + '/' + vmtsdb_container_image_container
+  }}
+#vmtsdb_container_image_tag:
+vmtsdb_container_image: >-2
+  {{ vmtsdb_container_image_name }}:{{ vmtsdb_container_image_tag | default('v' + vmtsdb_version, false) }}
+
+vmtsdb_user_id: >-
+  {{ (vmtsdb_user_info is defined and 'uid' in vmtsdb_user_info) | ternary(vmtsdb_user_info.uid, vmtsdb_user) }}
+vmtsdb_group_id: >-
+  {{ (vmtsdb_user_info is defined and 'group' in vmtsdb_user_info) | ternary(vmtsdb_user_info.group, vmtsdb_user) }}
+vmtsdb_container_user: "{{ vmtsdb_user_id }}"
+vmtsdb_container_group: "{{ vmtsdb_group_id }}"
+vmtsdb_container_name: "vmtsdb"
+vmtsdb_container_command: []
+vmtsdb_container_default_command:
+  - "-enableTCP6"
+  - "-envflag.enable"
+vmtsdb_container_merged_command: >-
+  {{ vmtsdb_container_default_command + (vmtsdb_container_command | default([], false)) }}
+vmtsdb_container_env: {}
+vmtsdb_container_default_env:
+  PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+vmtsdb_container_merged_env: >-
+  {{ vmtsdb_container_default_env | combine(vmtsdb_container_env) }} 
+vmtsdb_container_volumes: []
+vmtsdb_container_default_volumes:
+  - "{{ vmtsdb_data_path }}:/victoria-metrics-data:z"
+vmtsdb_container_merged_volumes: >-
+  {{ vmtsdb_container_default_volumes | combine(vmtsdb_container_volumes) }}
+vmtsdb_container_restart_policy: "unless-stopped"

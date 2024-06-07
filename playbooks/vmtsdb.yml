@@ -1,0 +1,6 @@
+---
+- name: Install vmtsdb using docker
+  hosts: "{{ vmtsdb_hosts | default('vmtsdb') }}"
+  become: "{{ vmtsdb_become | default(false) }}"
+  roles:
+    - role: finallycoffee.observability.vmtsdb
