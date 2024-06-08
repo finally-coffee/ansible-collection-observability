@@ -1,0 +1,69 @@
+---
+- name: Ensure user {{ vmalert_user }} is {{ vmalert_state }}
+  ansible.builtin.user:
+    name: "{{ vmalert_user }}"
+    state: present
+    system: true
+    create_home: false
+  register: vmalert_user_info
+
+- name: Ensure directories for vmalert are {{ vmalert_state }}
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "{{ (vmalert_state == 'present') | ternary('directory', 'absent') }}"
+    owner: "{{ item.owner | default(vmalert_user_id) }}"
+    group: "{{ item.group | default(vmalert_group_id) }}"
+    mode: "{{ item.mode | default('0775') }}"
+  loop:
+    - path: "{{ vmalert_base_path }}"
+    - path: "{{ vmalert_config_path }}"
+      mode: "0755"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Ensure alert configuration is present
+  ansible.builtin.copy:
+    dest: "{{ vmalert_alert_config }}"
+    content: |
+      {{ ({ 'groups': vmalert_alerts})
+      | to_nice_yaml(indent=2, width=1024, default_style='"') }}
+    owner: "{{ item.owner | default(vmalert_user_id) }}"
+    group: "{{ item.group | default(vmalert_group_id) }}"
+    mode: "{{ item.mode | default('0775') }}"
+  when: vmalert_state == 'present'
+
+- name: Ensure recording rule configuration is present
+  ansible.builtin.copy:
+    dest: "{{ vmalert_recording_config }}"
+    content: |
+      {{ ({ 'groups': vmalert_records})
+      | to_nice_yaml(indent=2, width=1024, default_style='"') }}
+    owner: "{{ item.owner | default(vmalert_user_id) }}"
+    group: "{{ item.group | default(vmalert_group_id) }}"
+    mode: "{{ item.mode | default('0775') }}"
+  when: vmalert_state == 'present'
+
+- name: Ensure container image {{ vmalert_container_image }} is {{ vmalert_state }}
+  community.docker.docker_image:
+    name: "{{ vmalert_container_image }}"
+    state: "{{ vmalert_state }}"
+    source: "{{ (vmalert_state == 'present') | ternary('pull', omit) }}"
+    force_source: >-2
+      {{ (vmalert_container_image == 'present') | ternary(vmalert_container_image_tag, omit) }}
+
+- name: Ensure vmalert container is {{ vmalert_state }}
+  community.docker.docker_container:
+    name: "{{ vmalert_container_name}}"
+    image: "{{ vmalert_container_image }}"
+    env: "{{ vmalert_container_merged_env }}"
+    user: "{{ vmalert_container_user }}"
+    ports: "{{ vmalert_container_ports | default(omit) }}"
+    groups: "{{ vmalert_container_group }}"
+    labels: "{{ vmalert_container_labels | default(omit) }}"
+    volumes: "{{ vmalert_container_merged_volumes }}"
+    command: "{{ vmalert_container_merged_command }}"
+    networks: "{{ vmalert_container_networks | default(omit) }}"
+    etc_hosts: "{{ vmalert_container_etc_hosts | default(omit )}}"
+    purge_networks: "{{ vmalert_container_purge_networks | default(omit) }}"
+    restart_policy: "{{ vmalert_container_restart_policy | default(omit) }}"
+    state: "{{ (vmalert_state == 'present') | ternary('started', 'absent') }}"

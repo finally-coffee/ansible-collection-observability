@@ -1,0 +1,57 @@
+---
+vmalert_state: present
+vmalert_user: vmalert
+vmalert_version: "1.87.5"
+vmalert_base_path: "/opt/vmalert"
+vmalert_config_path: "{{ vmalert_base_path }}/config"
+vmalert_alert_config: "{{ vmalert_config_path }}/alerts.yml"
+vmalert_recording_config: "{{ vmalert_config_path }}/records.yml"
+
+vmalert_alerts: {}
+vmalert_records: {}
+vmalert_rule_files: []
+vmalert_default_rule_files:
+  - "{{ vmalert_alert_config }}"
+  - "{{ vmalert_recording_config }}"
+vmalert_merged_rule_files: >-
+  {{ vmalert_default_rule_files + vmalert_rule_files }}
+
+vmalert_container_image_server: docker.io
+vmalert_container_image_namespace: "victoriametrics"
+vmalert_container_image_container: "vmalert"
+vmalert_container_image_name: >-2
+  {{
+    vmalert_container_image_server
+    + ((vmalert_container_image_namespace is defined)
+      | ternary('/' ~ vmalert_container_image_namespace, ''))
+    + '/' + vmalert_container_image_container
+  }}
+#vmalert_container_image_tag:
+vmalert_container_image: >-2
+  {{ vmalert_container_image_name }}:{{ vmalert_container_image_tag | default('v' + vmalert_version, false) }}
+
+vmalert_user_id: >-
+  {{ (vmalert_user_info is defined and 'uid' in vmalert_user_info) | ternary(vmalert_user_info.uid, vmalert_user) }}
+vmalert_group_id: >-
+  {{ (vmalert_user_info is defined and 'group' in vmalert_user_info) | ternary(vmalert_user_info.group, vmalert_user) }}
+vmalert_container_user: "{{ vmalert_user_id }}"
+vmalert_container_group: "{{ vmalert_group_id }}"
+vmalert_container_name: "vmalert"
+vmalert_container_command: []
+vmalert_container_default_command:
+  - "-enableTCP6"
+  - "-envflag.enable"
+vmalert_container_merged_command: >-
+  {{ vmalert_container_default_command + (vmalert_container_command | default([], false)) }}
+vmalert_container_env: {}
+vmalert_container_default_env:
+  PATH: "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  rule: "{{ vmalert_merged_rule_files | join(',') }}"
+vmalert_container_merged_env: >-
+  {{ vmalert_container_default_env | combine(vmalert_container_env) }} 
+vmalert_container_volumes: []
+vmalert_container_default_volumes:
+  - "{{ vmalert_config_path }}:{{ vmalert_config_path }}:z"
+vmalert_container_merged_volumes: >-
+  {{ vmalert_container_default_volumes | combine(vmalert_container_volumes) }}
+vmalert_container_restart_policy: "unless-stopped"

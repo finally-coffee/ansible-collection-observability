@@ -1,0 +1,6 @@
+---
+- name: Install vmalert using docker
+  hosts: "{{ vmalert_hosts | default('vmalert') }}"
+  become: "{{ vmalert_become | default(false) }}"
+  roles:
+    - role: finallycoffee.observability.vmalert

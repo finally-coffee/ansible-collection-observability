@@ -17,6 +17,9 @@ metrics or alerting.
 
 - [`vmtsdb`](roles/vmtsdb/README.md): VictoriaMetrics time series database.
 
+- [`vmalert`](roles/vmalert/README.md): VictoriaMetrics alerting and
+  ruling engine.
+
 - [`postgres_exporter`](roles/postgres_exporter/README.md): Prometheus
   exporter for postgres databases, in a docker container.
 
