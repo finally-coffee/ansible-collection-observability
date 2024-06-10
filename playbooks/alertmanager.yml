@@ -1,0 +1,6 @@
+---
+- name: Ensure alertmanager is configured and running
+  hosts: "{{ alertmanager_hosts | default('alertmanager') }}"
+  become: "{{ alertmanager_become | default(false, false) }}"
+  roles:
+    - role: finallycoffee.observability.alertmanager
