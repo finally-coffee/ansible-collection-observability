@@ -45,3 +45,6 @@
     purge_networks: "{{ vmtsdb_container_purge_networks | default(omit) }}"
     restart_policy: "{{ vmtsdb_container_restart_policy | default(omit) }}"
     state: "{{ (vmtsdb_state == 'present') | ternary('started', 'absent') }}"
+    comparisons:
+      labels: strict
+      env: strict
