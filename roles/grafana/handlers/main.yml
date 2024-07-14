@@ -1,0 +1,8 @@
+---
+- name: Ensure grafana is restarted
+  community.general.docker_container:
+    name: "{{ grafana_container_name }}"
+    state: "started"
+    restart: true
+  when: "grafana_state == 'present'"
+  listen: grafana-restart

@@ -1,0 +1,235 @@
+---
+grafana_user: grafana
+grafana_version: "10.1.1"
+grafana_base_path: "/opt/grafana"
+grafana_config_path: "{{ grafana_base_path }}/config"
+grafana_config_file: "{{ grafana_config_path }}/grafana.ini"
+grafana_ldap_config_file: "{{ grafana_config_path }}/ldap.toml"
+grafana_provisioning_path: "{{ grafana_config_path }}/provisioning"
+grafana_notifier_provisioning_path: "{{ grafana_provisioning_path }}/notifiers"
+grafana_dashboard_provisioning_path: "{{ grafana_provisioning_path }}/dashboards"
+grafana_datasource_provisioning_path: "{{ grafana_provisioning_path }}/datasources"
+grafana_plugin_provisioning_path: "{{ grafana_provisioning_path }}/plugins"
+grafana_data_path: "{{ grafana_base_path }}/data"
+grafana_logs_path: "{{ grafana_base_path }}/logs"
+grafana_state: present
+
+grafana_run_user: >-
+  {{ ('uid' in (grafana_user_info | default([]))) | ternary(grafana_user_info.uid, grafana_user) }}
+grafana_run_group: >-
+  {{ ('group' in (grafana_user_info | default([]))) | ternary(grafana_user_info.group, grafana_user) }}
+
+grafana_container_image_server: "docker.io"
+grafana_container_image_namespace: "grafana"
+grafana_container_image_container: "grafana"
+grafana_container_image_name: >-
+  {{
+    [
+      ((grafana_container_image_server is defined)
+        | ternary([ grafana_container_image_server ], [])),
+      ((grafana_container_image_namespace is defined)
+        | ternary([ grafana_container_image_namespace], [])),
+      grafana_container_image_container,
+    ] | ansible.builtin.flatten | join('/')
+  }}
+grafana_container_image: >-
+  {{ grafana_container_image_name }}:{{ grafana_container_image_tag | default(grafana_version, true) }}
+
+grafana_container_name: grafana
+grafana_container_base_volumes:
+  - "{{ grafana_config_path }}:{{ grafana_container_config_path }}:ro"
+  - "{{ grafana_data_path }}:{{ grafana_container_data_path }}:rw"
+  - "{{ grafana_logs_path }}:{{ grafana_container_logs_path }}:rw"
+grafana_container_volumes: []
+grafana_container_collected_volumes: >-
+  {{ grafana_container_base_volumes + grafana_container_volumes }}
+grafana_container_restart_policy: "unless-stopped"
+
+grafana_config_log_mode:
+  - console
+  - file
+grafana_config_auth_generic_oauth_scopes:
+  - openid
+  - profile
+  - email
+  - roles
+  - offline_access
+
+grafana_config_auth_generic_oauth_config:
+  enabled: "{{ grafana_config_auth_generic_oauth_enabled }}"
+  name: "{{ grafana_config_auth_generic_oauth_name }}"
+  client_id: "{{ grafana_config_auth_generic_oauth_client_id }}"
+  client_secret: "{{ grafana_config_auth_generic_oauth_client_secret }}"
+  scopes: "{{ grafana_config_auth_generic_oauth_scopes | join(' ') }}"
+  email_attribute_name: "{{ grafana_config_auth_generic_oauth_email_attribute_name | default('email') }}"
+  email_attribute_path: "{{ grafana_config_auth_generic_oauth_email_attribute_name | default('email') }}"
+  login_attribute_path: "{{ grafana_config_auth_generic_oauth_login_attribute_name | default('preferred_username') }}"
+  name_attribute_path: "{{ grafana_config_auth_generic_oauth_name_attribute_name | default('name') }}"
+  api_url: "{{ grafana_config_auth_generic_oauth_api_url }}"
+  auth_url: "{{ grafana_config_auth_generic_oauth_auth_url }}"
+  token_url: "{{ grafana_config_auth_generic_oauth_token_url }}"
+  role_attribute_path: "{{ grafana_config_auth_generic_oauth_role_attribute_path | default('') }}"
+
+grafana_default_config:
+  DEFAULT:
+    app_mode: "{{ grafana_config_app_mode | default('production') }}"
+    instance_name: "{{ grafana_config_instance_name | default('${HOSTNAME}') }}"
+  paths:
+    data: "{{ grafana_config_paths_data | default('/var/lib/grafana') }}"
+    temp_data_lifetime: "{{ grafana_config_paths_temp_data_lifetime | default('24h') }}"
+    logs: "{{ grafana_config_paths_logs | default('/var/log/grafana') }}"
+    plugins: "{{ grafana_config_paths_plugins | default('/var/lib/grafana/plugins') }}"
+    provisioning: "{{ grafana_config_paths_provisioning | default('conf/provisioning') }}"
+  server:
+    protocol: "{{ grafana_config_server_protocol | default('http') }}"
+    http_addr: "{{ grafana_config_server_http_addr | default('\"\"') }}"
+    http_port: "{{ grafana_config_server_http_port | default(3000) }}"
+    domain: "{{ grafana_config_server_domain }}"
+    enforce_domain: "{{ grafana_config_server_enforce_domain | default(true) }}"
+    root_url: "{{ grafana_config_server_root_url | default('%(protocol)s://%(domain)s:%(http_port)s/') }}"
+    serve_from_subpath: "{{ grafana_config_server_serve_from_subpath | default(false) }}"
+    router_logging: "{{ grafana_config_server_router_logging | default(false) }}"
+    static_root_path: "{{ grafana_config_server_static_root_path | default('public') }}"
+    enable_gzip: "{{ grafana_config_server_enable_gzip | default(false) }}"
+    cert_file: "{{ grafana_config_server_cert_file | default('\"\"') }}"
+    cert_key: "{{ grafana_config_server_cert_key | default('\"\"') }}"
+    socket: "{{ grafana_config_server_socket | default('\"\"') }}"
+  database:
+    type: "{{ grafana_config_database_type | default('sqlite3') }}"
+    host: "{{ grafana_config_database_host | default('127.0.0.1:3306') }}"
+    name: "{{ grafana_config_database_name | default('grafana') }}"
+    user: "{{ grafana_config_database_user | default('root') }}"
+    password: "{{ grafana_config_database_password | default('') }}"
+    url: "{{ grafana_config_database_url | default('') }}"
+    ssl_mode: "{{ grafana_config_database_ssl_mode | default('disable') }}"
+    ca_cert_path: "{{ grafana_config_database_ca_cert_path | default('') }}"
+    client_key_path: "{{ grafana_config_database_client_key_path | default('') }}"
+    client_cert_path: "{{ grafana_config_database_client_cert_path | default('') }}"
+    server_cert_name: "{{ grafana_config_database_srver_cert_name | default('') }}"
+    path: "{{ grafana_config_database_path | default('grafana.db') }}"
+    max_idle_conn: "{{ grafana_config_database_max_idle_conn | default(2) }}"
+    max_open_conn: "{{ grafana_config_database_max_open_conn | default(0) }}"
+    conn_max_lifetime: "{{ grafana_config_database_conn_max_lifetime | default(14400) }}"
+    log_queries: "{{ grafana_config_database_log_queries | default(false) }}"
+    cache_mode: "{{ grafana_config_database_cache_mode | default('private') }}"
+  remote_cache:
+    type: "{{ grafana_config_config_remote_cache_type | default('database') }}"
+    connstr: "{{ grafana_config_remote_cache_connstr | default('') }}"
+  dataproxy:
+    logging: "{{ grafana_config_dataproxy_logging | default(false) }}"
+    timeout: "{{ grafana_config_dataproxy_timeout | default(30) }}"
+    send_user_header: "{{ grafana_config_dataproxy_send_header | default(false) }}"
+  analytics:
+    reporting_enabled: "{{ grafana_config_analytics_reporting_enabled | default(true) }}"
+    check_for_updates: "{{ grafana_config_analytics_check_for_updates | default(true) }}"
+    google_analytics_ua_id: "{{ grafana_config_analytics_google_analytics_ua_id | default('') }}"
+    google_tag_manager_id: "{{ grafana_config_analytics_google_tag_manager_id | default('') }}"
+  security:
+    disable_initial_admin_create: "{{ grafana_config_security_disable_initial_admin_creation | default(false) }}"
+    admin_user: "{{ grafana_config_security_admin_user | default('admin') }}"
+    admin_password: "{{ grafana_config_security_admin_password }}"
+    secret_key: "{{ grafana_config_security_secret_key }}"
+    disable_gravatar: "{{ grafana_config_security_disable_gravatar | default(true) }}"
+    data_source_proxy_whitelist: "{{ grafana_config_security_data_source_proxy_whitelist | default([]) | join(' ') }}"
+    disable_brute_force_login_protection: "{{ grafana_config_security_disable_brute_force_login_protection | default(false) }}"
+    cookie_secure: "{{ grafana_config_security_cookie_secure | default(false) }}"
+    cookie_samesite: "{{ grafana_config_security_cookie_samesite | default('lax') }}"
+    allow_embedding: "{{ grafana_config_security_allow_embedding | default(false) }}"
+    strict_transport_security: "{{ grafana_config_security_strict_transport_security | default(false) }}"
+    strict_transport_security_max_age_seconds: "{{ grafana_config_security_strict_transport_security_max_age_seconds | default(86400) }}"
+    strict_transport_security_preload: "{{ grafana_config_security_strict_transport_security_preload | default(false) }}"
+    strict_transport_security_subdomains: "{{ grafana_config_security_strict_transport_security_subdomains | default(false) }}"
+    x_content_type_options: "{{ grafana_config_security_x_content_type_options | default(false) }}"
+    x_xss_protection: "{{ grafana_config_security_x_xss_protection | default(true) }}"
+  snapshots:
+    external_enabled: "{{ grafana_config_snapshots_external_enabled | default(false) }}"
+    external_snapshot_url: "{{ grafana_config_snapshots_external | default('') }}"
+    external_snapshot_name: "{{ grafana_config_snapshots_external | default('') }}"
+    public_mode_: "{{ grafana_config_snapshots_public_mode | default(false) }}"
+    snapshot_remove_expired: "{{ grafana_config_snapshots_snapshot_remove_expired | default(true) }}"
+  dashboards:
+    versions_to_keep: "{{ grafana_config_dashboards_versions_to_keep | default(20) }}"
+  users:
+    allow_sign_up: "{{ grafana_config_users_allow_sign_up | default(true) }}"
+    allow_org_create: "{{ grafana_config_users_allow_org_create | default(false) }}"
+    auto_assign_org: "{{ grafana_config_users_auto_assign_org | default(true) }}"
+    auto_assign_org_id: "{{ grafana_config_users_auto_assign_org_id | default(1) }}"
+    auto_assign_org_role: "{{ grafana_config_users_auto_assign_org_role | default('Viewer') }}"
+    verify_email_enabled: "{{ grafana_config_users_verify_email_enabled | default(false) }}"
+    login_hint: "{{ grafana_config_users_login_hint | default('email or username') }}"
+
+    password_hint: "{{ grafana_config_users_password_hint | default('password') }}"
+    viewers_can_edit: "{{ grafana_config_users_viewers_can_edit | default(true) }}"
+    editors_can_admin: "{{ grafana_config_users_editors_can_admin | default(false) }}"
+  auth:
+    login_cookie_name: "{{ grafana_config_auth_login_cookie_name | default('grafana_session') }}"
+    login_maximum_inactive_lifetime_days: "{{ grafana_config_auth_login_maximum_inactive_lifetime_days | default(7) }}"
+    login_maximum_lifetime_days: "{{ grafana_config_auth_login_maximum_lifetime_days | default(30) }}"
+    token_rotation_interval_minutes: "{{ grafana_config_auth_token_rotation_interval_minutes | default(10) }}"
+    disable_login_form: "{{ grafana_config_auth_disable_login_form | default(false) }}"
+    disable_signout_menu: "{{ grafana_config_auth_disable_signout_menu | default(false) }}"
+    signout_redirect_url: "{{ grafana_config_auth_signout_redirect_url | default('') }}"
+    api_key_max_seconds_to_live: "{{ grafana_config_api_key_max_seconds_to_live | default(-1) }}"
+    oauth_auto_login: "{{ grafana_config_auth_oauth_auto_login | default(false) }}"
+    oauth_allow_insecure_email_lookup: "{{ grafana_config_oauth_allow_insecure_email_lookup | default(false) }}"
+  smtp:
+    enabled: "{{ grafana_config_smtp_enabled | default(false) }}"
+    host: "{{ grafana_config_smtp_host | default('localhost:25') }}"
+    user: "{{ grafana_config_smtp_user | default('') }}"
+    password: "{{ grafana_config_smtp_password | default('') }}"
+    cert_file: "{{ grafana_config_smtp_cert_file | default('') }}"
+    key_file: "{{ grafana_config_smtp_key_file | default('') }}"
+    skip_verify: "{{ grafana_config_smtp_skip_verify | default('') }}"
+    ehlo_identity: "{{ grafana_config_smtp_ehlo_identity | default('') }}"
+    from_address: "{{ grafana_config_smtp_from_address | default('admin@grafana.localhost') }}"
+    from_name: "{{ grafana_config_smtp_from_name | default('Grafana') }}"
+  emails:
+    welcome_email_on_sign_up: "{{ grafana_config_emails_welcome_email_on_sign_up | default(false) }}"
+  log:
+    mode: "{{ grafana_config_log_mode | join(' ') }}"
+    level: "{{ grafana_config_log_level | default('info') }}"
+    filters: "{{ grafana_config_log_filters | default('') }}"
+  "log.syslog":
+    format: "{{ grafana_config_log_syslog_format | default('text') }}"
+  quota:
+    enabled: "{{ grafana_config_quota_enabled | default(false) }}"
+  explore:
+    enabled: "{{ grafana_config_explore_enabled | default(true) }}"
+  metrics:
+    enabled: "{{ grafana_config_metrics_enabled | default(false) }}"
+  grafana_com:
+    url: "{{ grafana_config_grafana_com_url | default('https://grafana.com') }}"
+
+grafana_merged_config: >-
+  {{
+    grafana_default_config
+    | combine({"auth.generic_oauth": grafana_config_auth_generic_oauth_config}
+      if grafana_config_auth_generic_oauth_enabled else {}, recursive=true)
+    | combine(grafana_config | default({}), recursive=true) }}
+
+grafana_ldap_config:
+  log:
+    filters: "{{ grafana_ldap_config_log_filters | default('ldap:trace') }}"
+  servers: "{{ grafana_ldap_config_default_servers }}"
+grafana_ldap_config_default_servers:
+  - host: "{{ grafana_ldap_config_servers_host }}"
+    port: "{{ grafana_ldap_config_servers_port }}"
+    use_ssl: "{{ grafana_ldap_config_servers_use_ssl | bool }}"
+    start_ssl: "{{ grafana_ldap_config_servers_start_ssl | bool }}"
+    ssl_skip_verify: "{{ grafana_ldap_config_servers_ssl_skip_verify | bool }}"
+    bind_dn: "{{ grafana_ldap_config_servers_bind_dn }}"
+    bind_passwort: "{{ grafana_ldap_config_servers_bind_passwort }}"
+    search_filter: "{{ grafana_ldap_config_servers_search_filter }}"
+    search_base_dns: "{{ grafana_ldap_config_servers_search_base_dns | to_json }}"
+    attributes:
+      name: "{{ grafana_ldap_config_servers_attributes_name | default('givenName') }}"
+      surname: "{{ grafana_ldap_config_servers_attributes_name | default('sn') }}"
+      username: "{{ grafana_ldap_config_servers_attributes_name | default('uid') }}"
+      member_of: "{{ grafana_ldap_config_servers_attributes_member_of | default('memberOf') }}"
+      email: "{{ grafana_ldap_config_servers_attributes_email | default('mail') }}"
+    group_mappings: "{{ grafana_ldap_config_default_group_mappings }}"
+grafana_ldap_config_default_group_mappings:
+  - group_dn: "{{ grafana_ldap_config_servers_group_mappings_group_dn }}"
+    org_role: "{{ grafana_ldap_config_servers_group_mappings_org_role }}"
+    org_id: "{{ grafana_ldap_config_servers_group_mappings_org_id }}"
+    grafana_admin: "{{ grafana_ldap_config_servers_group_mappings_grafana_admin }}"

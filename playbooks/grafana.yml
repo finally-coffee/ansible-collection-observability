@@ -1,0 +1,6 @@
+---
+- name: Install and configure grafana
+  hosts: "{{ grafana_hosts | default('grafana') }}"
+  become: "{{ grafana_become | default(false, true) }}"
+  roles:
+    - role: finallycoffee.observability.grafana

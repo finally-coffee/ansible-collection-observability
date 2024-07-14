@@ -1,0 +1,86 @@
+---
+- name: Ensure grafana_state is valid
+  ansible.builtin.assert:
+    that:
+      - "grafana_state in ['present', 'absent']"
+    fail_msg: >-
+      Only 'present' and 'absent' are allowed as values for grafana_state
+
+- name: Ensure user '{{ grafana_user }}' is {{ grafana_state }}
+  ansible.builtin.user:
+    name: "{{ grafana_user }}"
+    state: "{{ grafana_state }}"
+    system: true
+    create_home: false
+    groups: "{{ grafana_user_groups | default(omit) }}"
+    append: "{{ grafana_user_groups_append | default(omit) }}"
+  register: grafana_user_info
+
+- name: Ensure paths are {{ grafana_state }}
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: >-
+      {{ (grafana_state == 'present') | ternary('directory', 'absent') }}
+    owner: "{{ grafana_run_user }}"
+    group: "{{ grafana_run_group }}"
+    mode: "{{ item.mode | default('0755') }}"
+  loop:
+    - path: "{{ grafana_base_path }}"
+    - path: "{{ grafana_config_path }}"
+    - path: "{{ grafana_provisioning_path }}"
+    - path: "{{ grafana_notifier_provisioning_path }}"
+    - path: "{{ grafana_dashboard_provisioning_path }}"
+    - path: "{{ grafana_datasource_provisioning_path }}"
+    - path: "{{ grafana_plugin_provisioning_path }}"
+    - path: "{{ grafana_data_path }}"
+    - path: "{{ grafana_logs_path }}"
+
+- name: Ensure configuration file '{{ grafana_config_file }}' is templated
+  ansible.builtin.copy:
+    dest: "{{ grafana_config_file }}"
+    content: "{{ grafana_merged_config | community.general.to_ini }}"
+    owner: "{{ grafana_run_user }}"
+    group: "{{ grafana_run_group }}"
+    mode: "0640"
+  when: "grafana_state == 'present'"
+  tags:
+    - grafana-update-config
+  notify: grafana-restart
+
+- name: Ensure ldap configuration file '{{ grafana_ldap_config_file }}' is templated if required
+  ansible.builtin.copy:
+    dest: "{{ grafana_ldap_config_file }}"
+    content: "{{ grafana_ldap_config | ansible.builtin.to_toml }}"
+    owner: "{{ grafana_run_user }}"
+    group: "{{ grafana_run_group }}"
+    mode: "0640"
+  when:
+    - "grafana_state == 'present'"
+    - "grafana_config_auth_ldap_enabled | default(false) | bool"
+  tags:
+    - grafana-update-config
+  notify: grafana-restart
+
+- name: Ensure grafana container image '{{ grafana_container_image }}' is {{ grafana_state }}
+  community.docker.docker_image:
+    name: "{{ grafana_container_image }}"
+    state: "{{ grafana_state }}"
+    source: >-
+      {{ (grafana_state == 'present') | ternary('pull', omit) }}
+    force_source: >-
+      {{ (grafana_state == 'present') | ternary((grafana_container_image_tag is defined), omit) }}
+
+- name: Ensure grafana container '{{ grafana_container_name }}' is {{ grafana_state }}
+  community.docker.docker_container:
+    name: "{{ grafana_container_name }}"
+    env: "{{ grafana_container_env | default(omit) }}"
+    user: "{{ grafana_run_user }}"
+    ports: "{{ grafana_container_ports | default(omit) }}"
+    groups: "{{ grafana_run_group }}"
+    labels: "{{ grafana_container_labels | default(omit) }}"
+    volumes: "{{ grafana_container_collected_volumes }}"
+    networks: "{{ grafana_container_networks | default(omit, true) }}"
+    restart_policy: "{{ grafana_container_restart_policy }}"
+    state: "{{ (grafana_state == 'present') | ternary('started', 'absent') }}"
+    comparisons:
+      '*': strict
