@@ -1,7 +1,6 @@
 ---
-
 alertmanager_user: alertmanager
-alertmanager_version: 0.25.0
+alertmanager_version: 0.27.0
 alertmanager_base_path: /opt/alertmanager
 alertmanager_config_path: "{{ alertmanager_base_path }}/config"
 alertmanager_config_file: "{{ alertmanager_config_path }}/alertmanager.yml"
