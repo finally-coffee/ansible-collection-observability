@@ -1,6 +1,6 @@
 namespace: finallycoffee
 name: observability
-version: 0.0.1
+version: 0.1.0
 readme: README.md
 authors:
 - transcaffeine <transcaffeine@finally.coffee>
@@ -11,4 +11,4 @@ license_file: LICENSE.md
 build_ignore:
 - '*.tar.gz'
 repository: https://git.finally.coffee/finallycoffee/observability
-issues: https://git.finally.coffee/finallycoffee/observability/issues
+issues: https://codeberg.org/finallycoffee/ansible-collection-observability/issues
