@@ -1,0 +1,16 @@
+---
+vmagent_user: vmagent
+vmagent_version: "1.104.0"
+vmagent_state: present
+vmagent_deployment_method: "docker"
+
+vmagent_scrape_config_file: "/etc/vmagent/scrape_config.yml"
+vmagent_config_path: "{{ vmagent_scrape_config_file | dirname }}"
+vmagent_cache_path: "/var/cache/vmagent"
+
+vmagent_base_flags:
+  - "enableTCP6"
+  - "envflag.enable"
+vmagent_flags: ~
+vmagent_all_flags: >-2
+  {{ vmagent_base_flags + (vmagent_flags | default([], true)) }}

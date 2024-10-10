@@ -1,0 +1,7 @@
+---
+vmagent_user_groups: ~
+
+vmagent_run_user_id: >-2
+  {{ vmagent_user_info.uid | default(vmagent_user) }}
+vmagent_run_group_id: >-2
+  {{ vmagent_user_info.group | default(vmagent_user) }}

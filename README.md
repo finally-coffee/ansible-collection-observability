@@ -18,6 +18,8 @@ metrics or alerting.
   manager receiver which posts alerts to a configured matrix channel
   using alertmanagers' webhooks.
 
+- [`vmagent`](roles/vmagent/README.md): VictoriaMetrics agent
+
 - [`vmtsdb`](roles/vmtsdb/README.md): VictoriaMetrics time series database.
 
 - [`vmalert`](roles/vmalert/README.md): VictoriaMetrics alerting and

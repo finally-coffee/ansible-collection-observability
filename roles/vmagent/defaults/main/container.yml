@@ -1,0 +1,54 @@
+---
+vmagent_container_image_registry: "docker.io"
+vmagent_container_image_namespace: "victoriametrics"
+vmagent_container_image_name: "vmagent"
+vmagent_container_image_tag: ~
+vmagent_container_image: >-2
+  {{
+    ([
+      vmagent_container_image_registry,
+      vmagent_container_image_namespace,
+      vmagent_container_image_name,
+    ] | join('/'))
+    + ':'
+    + (vmagent_container_image_tag
+      | default('v' + vmagent_version, true))
+  }}
+vmagent_container_image_source: pull
+vmagent_container_image_force_source: >-2
+  {{ vmagent_container_image_tag | default(false, true) | bool }}
+vmagent_container_image_network_retries: 3
+vmagent_container_image_network_delay: 5
+
+vmagent_container_name: vmagent
+vmagent_container_user: ~
+vmagent_container_ports: ~
+vmagent_container_labels: ~
+vmagent_container_command: >-2
+  {% for flag in vmagent_all_flags -%}
+  -{{ flag }}
+  {% endfor -%}
+vmagent_container_networks: ~
+vmagent_container_etc_hosts: ~
+vmagent_container_dns_servers: ~
+vmagent_container_restart_policy: >-2
+  {{ (vmagent_deployment_type == 'docker')
+    | ternary('unless-stopped', 'on-failure') }}
+vmagent_container_state: >-2
+  {{ (vmagent_state == 'present') | ternary('started', 'absent') }}
+
+vmagent_container_base_volumes:
+  - "{{ vmagent_scrape_config_file }}:{{ vmagent_scrape_config_file }}:ro"
+  - "{{ vmagent_cache_path }}:{{ vmagent_cache_path }}:z"
+vmagent_container_volumes: ~
+vmagent_container_all_volumes: >-2
+  {{ (vmagent_container_base_volumes | default([], true))
+    + (vmagent_container_volumes | default([], true)) }}
+
+vmagent_container_base_env:
+  remoteWrite_tmpDataPath: "{{ vmagent_cache_path }}"
+  promscrape_config: "{{ vmagent_scrape_config_file }}"
+vmagent_container_env: ~
+vmagent_container_merged_env: >-2
+  {{ (vmagent_container_base_env | default({}, true))
+    | combine(vmagent_container_env | default({})) }}

@@ -1,0 +1,17 @@
+---
+vmagent_config_global_scrape_interval: "30s"
+vmagent_config_global_scrape_timeout: "10s"
+vmagent_config_global_external_labels: []
+vmagent_config_scrape_configs: []
+
+vmagent_config: ~
+vmagent_base_config:
+  global:
+    scrape_interval: "{{ vmagent_config_global_scrape_interval }}"
+    scrape_timeout: "{{ vmagent_config_global_scrape_timeout }}"
+    external_labels: "{{ vmagent_config_global_external_labels }}"
+  scrape_configs: "{{ vmagent_config_scrape_configs }}"
+
+vmagent_merged_config: >-2
+  {{ (vmagent_base_config | default({}, true))
+    | combine(vmagent_config | default({}, true), recursive=True) }}

@@ -1,0 +1,54 @@
+---
+- name: Check that `vmagent_state` is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unsupported state '{{ vmagent_state }}'! Supported states
+      are {{ vmagent_states | join(', ') }}.
+  when: vmagent_state not in vmagent_states
+
+- name: Check that `vmagent_deployment_method` is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unsupported deployment method '{{ vmagent_deployment_method }}'!
+      Supported are: {{ vmagent_deployment_methods | join(', ') }}.
+  when: vmagent_deployment_method not in vmagent_deployment_methods
+
+- name: Ensure vmagent user '{{ vmagent_user }}' is {{ vmagent_state }}
+  ansible.builtin.user:
+    name: "{{ vmagent_user }}"
+    state: "{{ vmagent_state }}"
+    system: "{{ vmagent_user_system | default(true, true) }}"
+    groups: "{{ vmagent_user_groups | default(omit, true) }}"
+    append: "{{ (vmagent_user_groups | default([], true)) | length > 0 }}"
+    create_home: "{{ vmagent_user_create_home | default(false, true) }}"
+  register: vmagent_user_info
+
+- name: Ensure configuration file '{{ vmagent_scrape_config_file }}' is {{ vmagent_state }}
+  ansible.builtin.file:
+    path: "{{ vmagent_scrape_config_file }}"
+    state: "{{ vmagent_state }}"
+  when: vmagent_state == 'absent'
+
+- name: Ensure config directory '{{ vmagent_config_path }}' is {{ vmagent_state }}
+  ansible.builtin.file:
+    path: "{{ vmagent_config_path }}"
+    state: >-2
+      {{ (vmagent_state == 'present') | ternary('directory', 'absent') }}
+    owner: "{{ vmagent_run_user_id }}"
+    group: "{{ vmagent_run_group_id }}"
+    mode: "0755"
+
+- name: Ensure configuration file '{{ vmagent_scrape_config_file }}' is {{ vmagent_state }}
+  ansible.builtin.copy:
+    dest: "{{ vmagent_scrape_config_file }}"
+    content: "{{ vmagent_merged_config | to_nice_yaml(indent=4, width=1000) }}"
+    owner: "{{ vmagent_run_user_id }}"
+    group: "{{ vmagent_run_group_id }}"
+    mode: "0644"
+  when: vmagent_state == 'present'
+  notify:
+    - vmagent-reload
+
+- name: Ensure vmagent is deployed using {{ vmagent_deployment_method }}
+  ansible.builtin.include_tasks:
+    file: "deploy-{{ vmagent_deployment_method }}.yml"

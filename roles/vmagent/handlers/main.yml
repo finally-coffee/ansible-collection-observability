@@ -1,0 +1,9 @@
+---
+- name: Ensure vmagent container '{{ vmagent_container_name }}' is restarted
+  community.docker.docker_container:
+    name: "{{ vmagent_container_name }}"
+    state: "{{ vmagent_container_state }}"
+    restart: true
+  listen: "vmagent-reload"
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: vmagent_deployment_method == 'docker'

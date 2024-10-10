@@ -1,0 +1,6 @@
+---
+- name: Install and configure vmagent
+  hosts: "{{ vmagent_hosts | default('vmagent') }}"
+  become: "{{ vmagent_become | default(false) }}"
+  roles:
+    - role: finallycoffee.observability.vmagent

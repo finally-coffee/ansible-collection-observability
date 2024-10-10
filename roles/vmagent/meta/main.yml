@@ -1,0 +1,10 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: vmagent
+  description: Deploy and configure the victoriametrics agent `vmagent`
+  galaxy_tags:
+    - victoriametrics
+    - vmagent
+    - prometheus

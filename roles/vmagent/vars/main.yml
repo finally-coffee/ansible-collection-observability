@@ -1,0 +1,6 @@
+---
+vmagent_states:
+  - present
+  - absent
+vmagent_deployment_methods:
+  - docker
