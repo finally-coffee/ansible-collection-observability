@@ -12,3 +12,9 @@ build_ignore:
 - '*.tar.gz'
 repository: https://git.finally.coffee/finallycoffee/observability
 issues: https://codeberg.org/finallycoffee/ansible-collection-observability/issues
+tags:
+  - observability
+  - monitoring
+  - prometheus
+  - victoriametrics
+  - grafana
