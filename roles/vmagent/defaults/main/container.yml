@@ -29,6 +29,7 @@ vmagent_container_command: >-2
   -{{ flag }}
   {% endfor -%}
 vmagent_container_networks: ~
+vmagent_container_network_mode: ~
 vmagent_container_etc_hosts: ~
 vmagent_container_dns_servers: ~
 vmagent_container_restart_policy: >-2

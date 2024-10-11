@@ -23,5 +23,6 @@
     networks: "{{ vmagent_container_networks | default(omit, true) }}"
     etc_hosts: "{{ vmagent_container_etc_hosts | default(omit, true) }}"
     dns_servers: "{{ vmagent_container_dns_servers | default(omit, true) }}"
+    network_mode: "{{ vmagent_container_network_mode | default(omit, true) }}"
     restart_policy: "{{ vmagent_container_restart_policy | default(omit, true) }}"
     state: "{{ vmagent_container_state }}"

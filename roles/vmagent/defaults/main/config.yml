@@ -1,7 +1,7 @@
 ---
 vmagent_config_global_scrape_interval: "30s"
 vmagent_config_global_scrape_timeout: "10s"
-vmagent_config_global_external_labels: []
+vmagent_config_global_external_labels: {}
 vmagent_config_scrape_configs: []
 
 vmagent_config: ~
