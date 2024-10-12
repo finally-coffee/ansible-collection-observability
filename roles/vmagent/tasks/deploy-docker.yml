@@ -25,4 +25,5 @@
     dns_servers: "{{ vmagent_container_dns_servers | default(omit, true) }}"
     network_mode: "{{ vmagent_container_network_mode | default(omit, true) }}"
     restart_policy: "{{ vmagent_container_restart_policy | default(omit, true) }}"
+    comparisons: "{{ vmagent_container_comparisons | default(omit, true) }}"
     state: "{{ vmagent_container_state }}"

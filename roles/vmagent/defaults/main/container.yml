@@ -53,3 +53,7 @@ vmagent_container_env: ~
 vmagent_container_merged_env: >-2
   {{ (vmagent_container_base_env | default({}, true))
     | combine(vmagent_container_env | default({})) }}
+vmagent_container_comparisons:
+  env: allow_more_present
+  image: strict
+  labels: allow_more_present
