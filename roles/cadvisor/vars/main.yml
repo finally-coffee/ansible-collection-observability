@@ -1,0 +1,6 @@
+---
+cadvisor_states:
+  - present
+  - absent
+cadvisor_deployment_methods:
+  - docker

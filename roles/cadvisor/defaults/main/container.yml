@@ -1,0 +1,56 @@
+---
+cadvisor_container_image_registry: gcr.io
+cadvisor_container_image_namespace: cadvisor
+cadvisor_container_image_name: cadvisor
+cadvisor_container_image: >-2
+  {{
+    [
+      cadvisor_container_image_registry,
+      cadvisor_container_image_namespace,
+      cadvisor_container_image_name,
+    ] | flatten | join('/')
+  }}
+cadvisor_container_image_tag: ~
+cadvisor_container_image_ref: >-2
+  {{ cadvisor_container_image }}:{{ cadvisor_container_image_tag | default('v' + cadvisor_version, true) }}
+cadvisor_container_image_source: pull
+cadvisor_container_image_force_source: >-2
+  {{ cadvisor_container_image_tag | default(false, true) | bool }}
+
+cadvisor_container_state: >-2
+  {{ (cadvisor_state == 'present') | ternary('started', 'absent') }}
+
+cadvisor_container_name: cadvisor
+cadvisor_container_volumes: >-2
+  {{ cadvisor_container_base_volumes + cadvisor_container_extra_volumes | default([], true) }}
+cadvisor_container_extra_volumes: ~
+cadvisor_container_env: ~
+cadvisor_container_labels: >-2
+  {{ cadvisor_container_base_labels | combine(cadvisor_container_extra_labels) }}
+cadvisor_container_extra_labels: {}
+cadvisor_container_ports: ~
+cadvisor_container_networks: ~
+cadvisor_container_etc_hosts: ~
+cadvisor_container_devices:
+  - "/dev/kmsg:/dev/kmsg:rwm"
+cadvisor_container_privileged: true
+cadvisor_container_pid_mode: "host"
+cadvisor_container_userns_mode: "host"
+cadvisor_container_capabilities: ~
+cadvisor_container_restart_policy: "unless-stopped"
+cadvisor_container_command: >-2
+  {{ ["--docker_only=false"]
+    + (["--disable_metrics=" + cadvisor_disabled_metrics | join( ',' )]
+      if cadvisor_disabled_metrics | default(false, true) else [])
+    + (["--enable_metrics=" +  cadvisor_force_enable_metrics | join( ',' )]
+      if cadvisor_force_enable_metrics | default(false, true) else [])
+  }}
+cadvisor_container_base_labels:
+  version: "{{ cadvisor_version }}"
+cadvisor_container_base_volumes:
+  - "/:/rootfs:ro"
+  - "/var/run:/var/run:ro"
+  - "/sys:/sys:ro"
+  - "/var/lib/docker/:/var/lib/docker:ro"
+  - "/dev/disk/:/dev/disk:ro"
+

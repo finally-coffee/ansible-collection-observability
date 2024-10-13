@@ -11,6 +11,9 @@ metrics or alerting.
   alertmanager for receiving alerts from prometheus and routing them
   to the correct configured receivers.
 
+- [`cadvisor`](roles/cadvisor/README.md): Run and configure cAdvisor, googles'
+  container performance and resource usage collection and aggregation daemon.
+
 - [`grafana`](roles/grafana/README.md): a popular visualization and
   dashboard creation tool able to use various datasources.
 

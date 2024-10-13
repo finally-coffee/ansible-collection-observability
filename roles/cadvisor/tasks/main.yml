@@ -1,26 +1,18 @@
 ---
+- name: Ensure state is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unknown state '{{ cadvisor_state }}'! Supported
+      states are: {{ cadvisor_states | join(', ') }}.
+  when: cadvisor_state not in cadvisor_states
 
-- name: Ensure container image is present
-  docker_image:
-    name: "{{ cadvisor_container_image_ref }}"
-    state: present
-    source: pull
-    force_source: "{{ cadvisor_container_image_tag|default(False, True) | bool }}"
+- name: Ensure deployment method is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Unknown deployment method '{{ cadvisor_deployment_method }}'! Supported
+      deployment methods are: {{ cadvisor_deployment_methods | join(', ') }}.
+  when: cadvisor_deployment_method not in cadvisor_deployment_methods
 
-- name: Ensure cadvisor container is running
-  docker_container:
-    name: "{{ cadvisor_container_name }}"
-    image: "{{ cadvisor_container_image_ref }}"
-    env: "{{ cadvisor_container_env | default(omit, True) }}"
-    ports: "{{ cadvisor_container_ports | default(omit, True) }}"
-    labels: "{{ cadvisor_container_labels }}"
-    devices: "{{ cadvisor_container_devices }}"
-    volumes: "{{ cadvisor_container_volumes }}"
-    networks: "{{ cadvisor_container_networks | default(omit, True) }}"
-    etc_hosts: "{{ cadvisor_container_etc_hosts | default(omit, True) }}"
-    privileged: "{{ cadvisor_container_privileged }}"
-    command: "{{ cadvisor_container_command }}"
-    pid_mode: "{{ cadvisor_container_pid_mode | default(omit, True) }}"
-    userns_mode: "{{ cadvisor_container_userns_mode | default(omit, True) }}"
-    restart_policy: "{{ cadvisor_container_restart_policy }}"
-    state: started
+- name: Deploy using {{ cadvisor_deployment_method }}
+  ansible.builtin.include_tasks:
+    file: "deploy-{{ cadvisor_deployment_method }}.yml"

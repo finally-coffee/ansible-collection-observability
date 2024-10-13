@@ -1,0 +1,18 @@
+---
+cadvisor_version: 0.49.1
+cadvisor_state: present
+cadvisor_deployment_method: docker
+
+cadvisor_disabled_metrics:
+  - advtcp
+  - cpu_topology
+  - cpuset
+  - hugetlb
+  - memory_numa
+  - process
+  - referenced_memory
+  - resctrl
+  - sched
+  - tcp
+  - udp
+cadvisor_force_enable_metrics: []

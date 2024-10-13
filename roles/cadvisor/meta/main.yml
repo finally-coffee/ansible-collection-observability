@@ -1,0 +1,11 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: cadvisor
+  description: Deploy cadvisor (Container Advisor), a container performance and resource usage aggregation daemon
+  galaxy_tags:
+    - cadvisor
+    - observability
+    - container
+    - docker
