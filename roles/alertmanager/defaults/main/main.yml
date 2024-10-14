@@ -1,0 +1,15 @@
+---
+alertmanager_user: alertmanager
+alertmanager_version: 0.27.0
+alertmanager_state: present
+alertmanager_deployment_method: docker
+alertmanager_base_path: /opt/alertmanager
+alertmanager_config_path: "{{ alertmanager_base_path }}/config"
+alertmanager_config_file: "{{ alertmanager_config_path }}/alertmanager.yml"
+alertmanager_data_path: "{{ alertmanager_base_path }}/data"
+
+
+alertmanager_config:
+  global: {}
+  route: {}
+  receivers: []

@@ -1,0 +1,10 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: alertmanager
+  description: Deploy and configure prometheus alertmanager
+  galaxy_tags:
+    - prometheus
+    - alertmanager
+    - observability

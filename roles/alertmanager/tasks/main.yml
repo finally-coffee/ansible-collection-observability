@@ -1,16 +1,29 @@
 ---
+- name: Ensure state is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Invalid state '{{ alertmanager_state }}'! Valid
+      states are {{ alertmanager_states | join(', ') }}.
+  when: alertmanager_state not in alertmanager_states
 
-- name: Ensure alertmanager user '{{ alertmanager_user }}' exists
+- name: Ensure deployment method is valid
+  ansible.builtin.fail:
+    msg: >-2
+      Invalid deployment method {{ alertmanager_deployment_method }}!
+      Supported deployment methods are {{ alertmanager_deployment_methods | join(', ') }}.
+  when: alertmanager_deployment_method not in alertmanager_deployment_methods
+
+- name: Ensure alertmanager user '{{ alertmanager_user }}' is {{ alertmanager_state }}
   ansible.builtin.user:
     name: "{{ alertmanager_user }}"
-    state: present
+    state: "{{ alertmanager_state }}"
     system: true
   register: alertmanager_user_info
 
-- name: Ensure mounts are created
+- name: Ensure mounts are {{ alertmanager_state }}
   ansible.builtin.file:
     dest: "{{ item.path }}"
-    state: directory
+    state: "{{ (alertmanager_state == 'present') | ternary('directory', 'absent') }}"
     owner: "{{ item.owner | default(alertmanager_user_info.uid | default(alertmanager_user)) }}"
     group: "{{ item.owner | default(alertmanager_user_info.group | default(alertmanager_user)) }}"
     mode: "{{ item.mode | default('0755') }}"
@@ -24,28 +37,12 @@
     dest: "{{ alertmanager_config_file }}"
     content: "{{ alertmanager_config | to_nice_yaml }}"
     owner: "{{ alertmanager_user_info.uid | default(alertmanager_user) }}"
-    owner: "{{ alertmanager_user_info.uid | default(alertmanager_user) }}"
+    group: "{{ alertmanager_user_info.group | default(alertmanager_user) }}"
     mode: "0640"
+  when: alertmanager_state == 'present'
   notify:
     - restart-alertmanager
 
-- name: Ensure container image is present on host
-  community.docker.docker_image:
-    name: "{{ alertmanager_container_image_reference }}"
-    state: present
-    source: pull
-    force_source: "{{ alertmanager_container_image_force_pull | bool }}"
-
-- name: Ensure container '{{ alertmanager_container_name }}' is running
-  community.docker.docker_container:
-    name: "{{ alertmanager_container_name }}"
-    image: "{{ alertmanager_container_image_reference }}"
-    env: "{{ alertmanager_container_env | default(omit) }}"
-    user: "{{ alertmanager_user_info.uid | default(alertmanager_user) }}"
-    ports: "{{ alertmanager_container_ports | default(omit) }}"
-    volumes: "{{ alertmanager_container_volumes | default(omit) }}"
-    networks: "{{ alertmanager_container_networks | default(omit) }}"
-    purge_networks: "{{ alertmanager_container_purge_networks | default(omit) }}"
-    etc_hosts: "{{ alertmanager_container_etc_hosts | default(omit) }}"
-    restart_policy: "{{ alertmanager_container_restart_policy }}"
-    state: started
+- name: Deploy alertmanager using {{ alertmanager_deployment_method }}
+  ansible.builtin.include_tasks:
+    file: "deploy-{{ alertmanager_deployment_method }}.yml"

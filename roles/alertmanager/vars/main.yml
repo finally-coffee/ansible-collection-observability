@@ -1,0 +1,6 @@
+---
+alertmanager_states:
+  - present
+  - absent
+alertmanager_deployment_methods:
+  - docker
