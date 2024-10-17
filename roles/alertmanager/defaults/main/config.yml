@@ -1,0 +1,8 @@
+---
+alertmanager_config_global: {}
+alertmanager_config_route: {}
+alertmanager_config_receivers: []
+alertmanager_config:
+  global: "{{ alertmanager_config_global }}"
+  route: "{{ alertmanager_config_route }}"
+  receivers: "{{ alertmanager_config_receivers }}"

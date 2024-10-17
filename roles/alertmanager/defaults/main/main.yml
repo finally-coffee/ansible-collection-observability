@@ -8,8 +8,3 @@ alertmanager_config_path: "{{ alertmanager_base_path }}/config"
 alertmanager_config_file: "{{ alertmanager_config_path }}/alertmanager.yml"
 alertmanager_data_path: "{{ alertmanager_base_path }}/data"
 
-
-alertmanager_config:
-  global: {}
-  route: {}
-  receivers: []
