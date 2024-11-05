@@ -2,7 +2,7 @@
 - name: Ensure grafana_state is valid
   ansible.builtin.assert:
     that:
-      - "grafana_state in ['present', 'absent']"
+      - "grafana_state in grafana_states"
     fail_msg: >-
       Only 'present' and 'absent' are allowed as values for grafana_state
 

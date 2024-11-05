@@ -1,4 +1,7 @@
 ---
+grafana_states:
+  - present
+  - absent
 grafana_container_config_path: "/etc/grafana"
 grafana_container_data_path: "/var/lib/grafana"
 grafana_container_logs_path: "/var/log/grafana"

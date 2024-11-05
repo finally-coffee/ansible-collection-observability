@@ -1,0 +1,20 @@
+---
+grafana_user: grafana
+grafana_version: "11.3.0"
+grafana_base_path: "/opt/grafana"
+grafana_config_path: "{{ grafana_base_path }}/config"
+grafana_config_file: "{{ grafana_config_path }}/grafana.ini"
+grafana_ldap_config_file: "{{ grafana_config_path }}/ldap.toml"
+grafana_provisioning_path: "{{ grafana_config_path }}/provisioning"
+grafana_notifier_provisioning_path: "{{ grafana_provisioning_path }}/notifiers"
+grafana_dashboard_provisioning_path: "{{ grafana_provisioning_path }}/dashboards"
+grafana_datasource_provisioning_path: "{{ grafana_provisioning_path }}/datasources"
+grafana_plugin_provisioning_path: "{{ grafana_provisioning_path }}/plugins"
+grafana_data_path: "{{ grafana_base_path }}/data"
+grafana_logs_path: "{{ grafana_base_path }}/logs"
+grafana_state: present
+
+grafana_run_user: >-
+  {{ ('uid' in (grafana_user_info | default([]))) | ternary(grafana_user_info.uid, grafana_user) }}
+grafana_run_group: >-
+  {{ ('group' in (grafana_user_info | default([]))) | ternary(grafana_user_info.group, grafana_user) }}

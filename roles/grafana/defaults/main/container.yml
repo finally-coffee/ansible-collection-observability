@@ -1,0 +1,26 @@
+---
+grafana_container_image_server: "docker.io"
+grafana_container_image_namespace: "grafana"
+grafana_container_image_container: "grafana"
+grafana_container_image_name: >-2
+  {{
+    [
+      ((grafana_container_image_server is defined)
+        | ternary([ grafana_container_image_server ], [])),
+      ((grafana_container_image_namespace is defined)
+        | ternary([ grafana_container_image_namespace], [])),
+      grafana_container_image_container,
+    ] | ansible.builtin.flatten | join('/')
+  }}
+grafana_container_image: >-2
+  {{ grafana_container_image_name }}:{{ grafana_container_image_tag | default(grafana_version, true) }}
+
+grafana_container_name: grafana
+grafana_container_base_volumes:
+  - "{{ grafana_config_path }}:{{ grafana_container_config_path }}:ro"
+  - "{{ grafana_data_path }}:{{ grafana_container_data_path }}:rw"
+  - "{{ grafana_logs_path }}:{{ grafana_container_logs_path }}:rw"
+grafana_container_volumes: []
+grafana_container_collected_volumes: >-2
+  {{ grafana_container_base_volumes + grafana_container_volumes }}
+grafana_container_restart_policy: "unless-stopped"
