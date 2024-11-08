@@ -1,0 +1,10 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: vmtsdb
+  description: Deploy and configure the victoriametrics time-series database `vmtsdb`
+  galaxy_tags:
+    - victoriametrics
+    - vmtsdb
+    - prometheus
