@@ -1,0 +1,11 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: grafana
+  description: Deploy and configure the grafana
+  galaxy_tags:
+    - grafana
+    - monitoring
+    - prometheus
+    - docker
