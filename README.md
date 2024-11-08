@@ -17,7 +17,7 @@ metrics or alerting.
 - [`grafana`](roles/grafana/README.md): a popular visualization and
   dashboard creation tool able to use various datasources.
 
-- [`matrix-alertmanager`](roles/matrix-alertmanager/README.md): An alert-
+- [`matrix_alertmanager`](roles/matrix_alertmanager/README.md): An alert-
   manager receiver which posts alerts to a configured matrix channel
   using alertmanagers' webhooks.
 
