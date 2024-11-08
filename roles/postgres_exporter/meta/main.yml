@@ -1,0 +1,12 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: postgres_exporter
+  description: Deploy and configure the prometheus-maintained postgres_exporter
+  galaxy_tags:
+    - postgres_exporter
+    - prometheus
+    - postgresql
+    - postgres
+    - docker
