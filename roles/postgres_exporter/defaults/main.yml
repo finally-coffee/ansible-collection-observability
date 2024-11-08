@@ -1,6 +1,6 @@
 ---
 
-postgres_exporter_version: "0.10.1"
+postgres_exporter_version: "0.15.0"
 postgres_exporter_user: root
 postgres_exporter_create_user: false
 
