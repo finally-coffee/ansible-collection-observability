@@ -1,5 +1,5 @@
 ---
-cadvisor_version: "0.50.0"
+cadvisor_version: "0.51.0"
 cadvisor_state: present
 cadvisor_deployment_method: docker
 
