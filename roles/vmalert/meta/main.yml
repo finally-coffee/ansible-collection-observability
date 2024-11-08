@@ -1,0 +1,11 @@
+---
+allow_duplicates: true
+dependencies: []
+galaxy_info:
+  role_name: vmalert
+  description: Deploy and configure the victoriametrics alerting engine `vmalert`
+  galaxy_tags:
+    - victoriametrics
+    - vmalert
+    - alerting
+    - prometheus
