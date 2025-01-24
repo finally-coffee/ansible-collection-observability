@@ -1,6 +1,6 @@
 ---
 alertmanager_user: alertmanager
-alertmanager_version: 0.27.0
+alertmanager_version: "0.28.0"
 alertmanager_state: present
 alertmanager_deployment_method: docker
 alertmanager_base_path: /opt/alertmanager
