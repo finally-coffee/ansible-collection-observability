@@ -1,6 +1,6 @@
 ---
 vmagent_user: vmagent
-vmagent_version: "1.110.0"
+vmagent_version: "1.111.0"
 vmagent_state: present
 vmagent_deployment_method: "docker"
 
