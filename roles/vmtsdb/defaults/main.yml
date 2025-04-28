@@ -1,7 +1,7 @@
 ---
 vmtsdb_state: present
 vmtsdb_user: vmtsdb
-vmtsdb_version: "1.115.0"
+vmtsdb_version: "1.116.0"
 vmtsdb_base_path: "/opt/vmtsdb"
 vmtsdb_data_path: "{{ vmtsdb_base_path }}/data"
 
