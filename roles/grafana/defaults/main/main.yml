@@ -1,6 +1,6 @@
 ---
 grafana_user: grafana
-grafana_version: "12.0.2"
+grafana_version: "12.1.0"
 grafana_base_path: "/opt/grafana"
 grafana_config_path: "{{ grafana_base_path }}/config"
 grafana_config_file: "{{ grafana_config_path }}/grafana.ini"
