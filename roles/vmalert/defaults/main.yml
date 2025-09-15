@@ -1,7 +1,7 @@
 ---
 vmalert_state: present
 vmalert_user: vmalert
-vmalert_version: "1.125.1"
+vmalert_version: "1.126.0"
 vmalert_base_path: "/opt/vmalert"
 vmalert_config_path: "{{ vmalert_base_path }}/config"
 vmalert_alert_config: "{{ vmalert_config_path }}/alerts.yml"
