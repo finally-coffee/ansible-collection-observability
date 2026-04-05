@@ -33,7 +33,7 @@ vmagent_container_network_mode: ~
 vmagent_container_etc_hosts: ~
 vmagent_container_dns_servers: ~
 vmagent_container_restart_policy: >-2
-  {{ (vmagent_deployment_type == 'docker')
+  {{ (vmagent_deployment_method == 'docker')
     | ternary('unless-stopped', 'on-failure') }}
 vmagent_container_state: >-2
   {{ (vmagent_state == 'present') | ternary('started', 'absent') }}
